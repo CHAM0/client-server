@@ -14,7 +14,12 @@ fn main() {
     let mut buf = vec![];
     loop {
         match stream.read_to_end(&mut buf) {
-            Ok(_) => break,
+            Ok(_) => {
+                // si le buffer est pas vide on apelle handle
+                if buf.len() > 0 {
+                    handle(&mut buf)
+                }
+            },
             Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
                 // wait until network socket is ready, typically implemented
                 // via platform-specific APIs such as epoll or IOCP
@@ -22,11 +27,19 @@ fn main() {
             }
             Err(e) => panic!("encountered IO error: {}", e),
         };
+
+        //execution du programme
+        println!("hello");
     };
 
-    let s = String::from_utf8_lossy(&buf);
+}
+
+// affiche le buffer et le vide
+fn handle(vec: &mut std::vec::Vec<u8>) {
+    let mut vec2 = vec.clone();
+    let s = String::from_utf8_lossy(&mut vec2);
     let v: Value = serde_json::from_str(&s).unwrap();
     println!("result: {}", s);
     println!("bytes: {}", v["age"]);
-
+    vec.clear();
 }
